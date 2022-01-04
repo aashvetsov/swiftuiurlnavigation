@@ -85,24 +85,24 @@ private struct Route<CoordinatorType: URLCoordinating>: ViewModifier  {
 private extension View {
 
     func pushable<T: URLCoordinating>(to destination: AnyView,
-                                          at url: String,
-                                          coordinatedBy coordinator: T) -> some View {
+                                      at url: String,
+                                      coordinatedBy coordinator: T) -> some View {
         modifier(PushViewModifier(with: destination,
                                   at: url,
                                   coordinatedBy: coordinator))
     }
 
     func presentable<T: URLCoordinating>(with destination: AnyView,
-                                             at url: String,
-                                             coordinatedBy coordinator: T) -> some View {
+                                         at url: String,
+                                         coordinatedBy coordinator: T) -> some View {
         modifier(PresentViewModifier(with: destination,
                                      at: url,
                                      coordinatedBy: coordinator))
     }
 
     func fullScreenCoverable<T: URLCoordinating>(with destination: AnyView,
-                                                     at url: String,
-                                                     coordinatedBy coordinator: T) -> some View {
+                                                 at url: String,
+                                                 coordinatedBy coordinator: T) -> some View {
         modifier(FullScreenCoverViewModifier(with: destination,
                                              at: url,
                                              coordinatedBy: coordinator))
