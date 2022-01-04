@@ -21,8 +21,8 @@ public extension View {
     func coordinatable<T: URLCoordinating>(to url: String,
                                            by coordinator: T) -> some View {
         modifier(
-            NavigationRoute(url: url,
-                            coordinator: coordinator)
+            Route(url: url,
+                  coordinator: coordinator)
         )
     }
 }
@@ -46,7 +46,7 @@ public extension View {
 
 private var _triggeredBy = [String: String]()
 
-private struct NavigationRoute<CoordinatorType: URLCoordinating>: ViewModifier  {
+private struct Route<CoordinatorType: URLCoordinating>: ViewModifier  {
 
     private let url: String
     private weak var coordinator: CoordinatorType?
@@ -60,8 +60,8 @@ private struct NavigationRoute<CoordinatorType: URLCoordinating>: ViewModifier  
     func body(content: Content) -> some View {
         if  let coordinator = coordinator,
             let destination = coordinator.destination(for: url),
-            let navigation = coordinator.navigationAction(for: url){
-            switch navigation {
+            let transition = coordinator.transition(for: url){
+            switch transition {
             case .push:
                 content.pushable(to: destination,
                                  at: url,

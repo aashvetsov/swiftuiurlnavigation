@@ -13,7 +13,7 @@ class DetailsCoordinator: URLCoordinating {
         nil
     }
 
-    func navigationAction(for url: String) -> NavigationAction? {
+    func transition(for url: String) -> TransitionType? {
         nil
     }
 }

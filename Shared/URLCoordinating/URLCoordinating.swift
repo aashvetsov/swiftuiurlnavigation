@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Public
 
-public enum NavigationAction: String {
+public enum TransitionType: String {
     
     case push
     case sheet
@@ -21,7 +21,7 @@ public protocol URLCoordinating: AnyObject {
 
     // MARK: - Mandatory
     func destination(for url: String) -> AnyView?
-    func navigationAction(for url: String) -> NavigationAction?
+    func transition(for url: String) -> TransitionType?
 
     // MARK: - Child coordinators
     var parentCoordinator: URLCoordinating? { get }

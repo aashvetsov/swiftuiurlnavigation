@@ -32,20 +32,20 @@ class AppCoordinator: URLCoordinating {
         return destination
     }
 
-    func navigationAction(for url: String) -> NavigationAction? {
-        var navigation: NavigationAction?
+    func transition(for url: String) -> TransitionType? {
+        var transition: TransitionType?
         switch AppLinks.Root(rawValue: url) {
         case .link1:
-            navigation = .push
+            transition = .push
         case .link2:
-            navigation = .sheet
+            transition = .sheet
         case .link3:
-            navigation = .fullScreenCover
+            transition = .fullScreenCover
         default:
             break
         }
 
-        return navigation
+        return transition
     }
 
     func onAppear(of url: String) {
