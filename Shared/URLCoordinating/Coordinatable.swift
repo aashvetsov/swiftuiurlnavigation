@@ -27,7 +27,24 @@ public extension View {
     }
 }
 
+// TODO: find better way to save info of how do we get into this view
+public extension View {
+
+    var url: String? {
+        get {
+            let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
+            return _triggeredBy[tmpAddress]
+        }
+        set(newValue) {
+            let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
+            _triggeredBy[tmpAddress] = newValue
+        }
+    }
+}
+
 // MARK: - Private
+
+private var _triggeredBy = [String: String]()
 
 private struct NavigationRoute<CoordinatorType: URLCoordinating>: ViewModifier  {
 
@@ -65,107 +82,8 @@ private struct NavigationRoute<CoordinatorType: URLCoordinating>: ViewModifier  
     }
 }
 
-private struct PushViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
-
-    private let destination: AnyView
-    private let url: String
-    private weak var coordinator: CoordinatorType?
-
-    init(with destination: AnyView,
-         at url: String,
-         coordinatedBy coordinator: CoordinatorType) {
-        self.destination = destination
-        self.url = url
-        self.coordinator = coordinator
-    }
-
-    // TODO: onLoad(of link:)
-    // TODO: onDismiss(of link:)
-    func body(content: Content) -> some View {
-        NavigationLink(destination:
-            destination
-                .onAppear {
-                    coordinator?.onAppear(of: url)
-                }
-                .onDisappear {
-                    coordinator?.onDissappear(of: url)
-                }
-        ) {
-            content
-        }
-    }
-}
-
-private struct PresentViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
-
-    private let destination: AnyView
-    private let url: String
-    private weak var coordinator: CoordinatorType?
-    @State private var isPresented = false
-
-    init(with destination: AnyView,
-         at url: String,
-         coordinatedBy coordinator: CoordinatorType) {
-        self.destination = destination
-        self.url = url
-        self.coordinator = coordinator
-    }
-
-    // TODO: onLoad(of link:)
-    // TODO: onDismiss(of link:)
-    func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $isPresented) {
-                destination
-                    .onAppear {
-                        coordinator?.onAppear(of: url)
-                    }
-                    .onDisappear {
-                        coordinator?.onDissappear(of: url)
-                    }
-            }
-            .onTapGesture {
-                isPresented.toggle()
-            }
-    }
-}
-
-private struct FullScreenCoverViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
-
-    private let destination: AnyView
-    private let url: String
-    private weak var coordinator: CoordinatorType?
-    @State private var isPresented = false
-
-    init(with destination: AnyView,
-         at url: String,
-         coordinatedBy coordinator: CoordinatorType) {
-        self.destination = destination
-        self.url = url
-        self.coordinator = coordinator
-    }
-
-    // TODO: onLoad(of link:)
-    // TODO: onDismiss(of link:)
-    func body(content: Content) -> some View {
-        content
-            .fullScreenCover(isPresented: $isPresented) {
-                destination
-                    .onAppear {
-                        coordinator?.onAppear(of: url)
-                    }
-                    .onDisappear {
-                        coordinator?.onDissappear(of: url)
-                    }
-            }
-            .onTapGesture {
-                isPresented.toggle()
-            }
-    }
-}
-
 private extension View {
-    
+
     func pushable<T: URLCoordinating>(to destination: AnyView,
                                           at url: String,
                                           coordinatedBy coordinator: T) -> some View {
@@ -188,5 +106,89 @@ private extension View {
         modifier(FullScreenCoverViewModifier(with: destination,
                                              at: url,
                                              coordinatedBy: coordinator))
+    }
+}
+
+private struct PushViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
+
+    private var destination: AnyView
+    private let url: String
+    private weak var coordinator: CoordinatorType?
+
+    init(with destination: AnyView,
+         at url: String,
+         coordinatedBy coordinator: CoordinatorType) {
+        self.destination = destination
+        self.destination.url = url
+        self.url = url
+        self.coordinator = coordinator
+    }
+
+    // TODO: onLoad(of link:)
+    // TODO: onDismiss(of link:)
+    func body(content: Content) -> some View {
+        NavigationLink(destination:
+            destination
+        ) {
+            content
+        }
+    }
+}
+
+private struct PresentViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
+
+    private var destination: AnyView
+    private let url: String
+    private weak var coordinator: CoordinatorType?
+    @State private var isPresented = false
+
+    init(with destination: AnyView,
+         at url: String,
+         coordinatedBy coordinator: CoordinatorType) {
+        self.destination = destination
+        self.destination.url = url
+        self.url = url
+        self.coordinator = coordinator
+    }
+
+    // TODO: onLoad(of link:)
+    // TODO: onDismiss(of link:)
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $isPresented) {
+                destination
+            }
+            .onTapGesture {
+                isPresented.toggle()
+            }
+    }
+}
+
+private struct FullScreenCoverViewModifier<CoordinatorType: URLCoordinating>: ViewModifier {
+
+    private var destination: AnyView
+    private let url: String
+    private weak var coordinator: CoordinatorType?
+    @State private var isPresented = false
+
+    init(with destination: AnyView,
+         at url: String,
+         coordinatedBy coordinator: CoordinatorType) {
+        self.destination = destination
+        self.destination.url = url
+        self.url = url
+        self.coordinator = coordinator
+    }
+
+    // TODO: onLoad(of link:)
+    // TODO: onDismiss(of link:)
+    func body(content: Content) -> some View {
+        content
+            .fullScreenCover(isPresented: $isPresented) {
+                destination
+            }
+            .onTapGesture {
+                isPresented.toggle()
+            }
     }
 }

@@ -1,4 +1,5 @@
-//UrlBasedCoordinating//  Deeplinks.swift
+//
+//  Deeplinks.swift
 //  NavigationDemo
 //
 //  Created by Артем Швецов on 03.01.2022.
@@ -13,6 +14,7 @@ public enum NavigationAction: String {
     case push
     case sheet
     case fullScreenCover
+    // TODO: case alert()
 }
 
 public protocol URLCoordinating: AnyObject {
@@ -23,13 +25,9 @@ public protocol URLCoordinating: AnyObject {
 
     // MARK: - Child coordinators
     var parentCoordinator: URLCoordinating? { get }
-    var childCoordinators: [String: URLCoordinating]? { get }
+    var childCoordinators: [ObjectIdentifier: URLCoordinating]? { get }
     func addChild<T: URLCoordinating>(_ coordinator: T)
     func removeChild<T: URLCoordinating>(_ coordinator: T)
-
-    // MARK: - Lifecycle
-    func onAppear(of link: String)
-    func onDissappear(of link: String)
 }
 
 public extension URLCoordinating {
@@ -38,7 +36,7 @@ public extension URLCoordinating {
         _parentCoordinator
     }
 
-    var childCoordinators: [String: URLCoordinating]? {
+    var childCoordinators: [ObjectIdentifier: URLCoordinating]? {
         _childCoordinators
     }
 }
@@ -46,40 +44,43 @@ public extension URLCoordinating {
 public extension URLCoordinating {
 
     func addChild<T: URLCoordinating>(_ coordinator: T) {
+        let id = ObjectIdentifier(coordinator)
+        _childCoordinators?[id] = coordinator
         coordinator._parentCoordinator = self
-        _childCoordinators?[String(describing: coordinator)] = coordinator
     }
+
     func removeChild<T: URLCoordinating>(_ coordinator: T) {
-        guard let _ = _childCoordinators else {
+        let id = ObjectIdentifier(coordinator)
+        guard nil != _childCoordinators?[id] else {
             return
         }
-        _childCoordinators?[String(describing: coordinator)] = nil
+        _childCoordinators?[id] = nil
+        coordinator._parentCoordinator = nil
     }
-    func onAppear(of link: String) {}
-    func onDissappear(of link: String) {}
 }
 
 // MARK: - Private
 
+// TODO: find better way to save relations
 private var ParentCoordinatorAssociatedObjectHandle: UInt8 = 0
 private var ChildCoordinatorAssociatedObjectHandle: UInt8 = 0
 private extension URLCoordinating {
 
     var _parentCoordinator: URLCoordinating? {
         get {
-            return objc_getAssociatedObject(self, &ParentCoordinatorAssociatedObjectHandle) as? URLCoordinating
+            objc_getAssociatedObject(self, &ParentCoordinatorAssociatedObjectHandle) as? URLCoordinating
         }
         set {
-            objc_setAssociatedObject(self, &ParentCoordinatorAssociatedObjectHandle, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &ParentCoordinatorAssociatedObjectHandle, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_ASSIGN)
         }
     }
 
-    var _childCoordinators: [String: URLCoordinating]? {
+    var _childCoordinators: [ObjectIdentifier: URLCoordinating]? {
         get {
-            return objc_getAssociatedObject(self, &ChildCoordinatorAssociatedObjectHandle) as? [String: URLCoordinating] ?? [:]
+            objc_getAssociatedObject(self, &ChildCoordinatorAssociatedObjectHandle) as? [ObjectIdentifier: URLCoordinating] ?? [:]
         }
         set {
-            objc_setAssociatedObject(self, &ChildCoordinatorAssociatedObjectHandle, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &ChildCoordinatorAssociatedObjectHandle, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_ASSIGN)
         }
     }
 }
