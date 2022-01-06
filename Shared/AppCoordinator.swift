@@ -47,12 +47,4 @@ class AppCoordinator: URLCoordinating {
 
         return transition
     }
-
-    func onAppear(of url: String) {
-        print("\(url) appeared")
-    }
-
-    func onDissappear(of url: String) {
-        print("\(url) dissappeared")
-    }
 }

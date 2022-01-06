@@ -9,13 +9,12 @@ import SwiftUI
 
 struct ContentView: View, Coordinatable {
     
-    @Injected var coordinator: AppCoordinator
+    @Binding var coordinator: AppCoordinator
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .center, spacing: 40) {
-
                     Text("Navigation Link #1")
                         .coordinatable(to: AppLinks.Root.link1.rawValue,
                                        by: coordinator)
